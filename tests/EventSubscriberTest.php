@@ -62,6 +62,7 @@ class EventSubscriberTest extends TestCase
 
         event(new MoneyAdded($this->account, 1234));
         $this->account->refresh();
+
         $this->assertEquals(1234, $this->account->amount);
 
         event(new MoneySubtracted($this->account, 34));

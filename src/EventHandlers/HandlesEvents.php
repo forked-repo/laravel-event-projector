@@ -22,7 +22,7 @@ trait HandlesEvents
         if ($methodName === '') {
             $methodName = $this->getNonAssociativeMethodName($handlesEvents, $eventClass);
         }
-
+        \Log::debug('method name: ' . $methodName . print_r($handlesEvents, true));
         return $methodName;
     }
 

@@ -21,15 +21,24 @@ trait ProjectsEvents
 
         return get_class($this);
     }
-
-    public function streamNamesToTrack(): array
+    
+    public function eventBelongsToHandledStreams(object $event): bool
     {
-        return array_wrap($this->trackStream ?? []);
+        $streamName = method_exists($event, 'getStreamName')
+            ? $event->getStreamName()
+            : 'main';
+
+        return in_array($streamName, $this->handlesStreams());
+    }
+
+    public function handlesStreams(): array
+    {
+        return array_wrap($this->handlesStreams ?? ['main']);
     }
 
     public function trackEventsByStreamNameAndId(): bool
     {
-        return count($this->streamNamesToTrack()) === 0;
+        return count($this->handlesStreams()) !== 0;
     }
 
     public function rememberReceivedEvent(StoredEvent $storedEvent)
@@ -40,6 +49,7 @@ trait ProjectsEvents
     public function hasReceivedAllPriorEvents(StoredEvent $storedEvent): bool
     {
         if (! $this->trackEventsByStreamNameAndId()) {
+
             return $storedEvent->id === $this->getStatus()->last_processed_event_id + 1;
         }
 
@@ -47,7 +57,7 @@ trait ProjectsEvents
         $previousEventId = optional($previousEvent)->id ?? 0;
 
         $lastProcessedEventId = (int) $this->getStatus($storedEvent)->last_processed_event_id ?? 0;
-
+\Log::debug('stored event id: ' . $storedEvent->id . ' previous event id: ' . $previousEventId . ' last processed event id: ' . $lastProcessedEventId);
         return $previousEventId === $lastProcessedEventId;
     }
 

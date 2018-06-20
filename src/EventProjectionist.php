@@ -131,29 +131,34 @@ class EventProjectionist
 
     protected function callEventHandlers(Collection $eventHandlers, StoredEvent $storedEvent): self
     {
+        \Log::debug('Call ' . count($eventHandlers) .'event handlers');
+
         $eventHandlers
             ->pipe(function (Collection $eventHandlers) {
                 return $this->instantiate($eventHandlers);
             })
             ->filter(function (EventHandler $eventHandler) use ($storedEvent) {
+                \Log::debug('eventhandler' . get_class($eventHandler));
                 if (! $eventHandler instanceof Projector) {
+                    \Log::debug('not a projector');
                     return true;
                 }
 
                 $event = $storedEvent->event;
 
-                if (! $method = $eventHandler->methodNameThatHandlesEvent($event)) {
+                if (! $eventHandler->eventBelongsToHandledStreams($event)) {
                     return false;
                 }
 
-                if (! method_exists($eventHandler, $method)) {
-                    throw InvalidEventHandler::eventHandlingMethodDoesNotExist($eventHandler, $event, $method);
+                if ($eventHandler->hasReceivedEvent($event)) {
+                    return false;
                 }
 
                 return true;
             })
             ->filter(function (EventHandler $eventHandler) use ($storedEvent) {
                 if ($eventHandler instanceof Projector) {
+                    \Log::debug('eventHandler: ' .get_class($eventHandler) . 'has received previous' . ($eventHandler->hasReceivedAllPriorEvents($storedEvent) ? 'yes' : 'no'));
                     if (! $eventHandler->hasReceivedAllPriorEvents($storedEvent)) {
                         event(new ProjectorDidNotHandlePriorEvents($eventHandler, $storedEvent));
 

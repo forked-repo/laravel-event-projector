@@ -20,7 +20,9 @@ interface Projector extends EventHandler
 
     public function lastEventProcessedAt(): Carbon;
 
-    public function streamNamesToTrack(): array;
+    public function handlesStreams(): array;
+
+    public function eventBelongsToHandledStreams(object $event): bool;
 
     public function trackEventsByStreamNameAndId(): bool;
 }
