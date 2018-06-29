@@ -5,6 +5,7 @@ namespace Spatie\EventProjector\Models;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Spatie\EventProjector\Projectors\Projector;
 use Spatie\EventProjector\ShouldBeStored;
 use Spatie\SchemalessAttributes\SchemalessAttributes;
 use Spatie\EventProjector\EventSerializers\EventSerializer;
@@ -31,6 +32,15 @@ class StoredEvent extends Model
         $storedEvent->save();
 
         return $storedEvent;
+    }
+
+    public static function getMaxIdForProjector(Projector $projector): int
+    {
+        $tableName = (new static())->getTable();
+
+        return DB::table($tableName)
+                ->whereIn('event_class', $projector->handlesEventClassNames())
+                ->max('id') ?? 0;
     }
 
     public static function getMaxId(): int

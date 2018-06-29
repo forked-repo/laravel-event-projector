@@ -2,8 +2,10 @@
 
 namespace Spatie\EventProjector\Models;
 
+use Illuminate\Session\Store;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Spatie\EventProjector\Projectors\Projector;
 use Spatie\EventProjector\Facades\EventProjectionist;
 
@@ -32,13 +34,13 @@ class ProjectorStatus extends Model
         return $this;
     }
 
-    public static function hasReceivedAllEvents(Projector $projector): bool
+    public function hasReceivedAllEvents(): bool
     {
-        $highestEventId = (int) self::query()
-            ->where('projector_name', $projector->getName())
+        $highestProcessedEventId = (int) self::query()
+            ->where('projector_name', $this->getProjector()->getName())
             ->max('last_processed_event_id') ?? 0;
 
-        return $highestEventId === StoredEvent::getMaxId();
+        return $highestProcessedEventId === StoredEvent::getMaxIdForProjector($this->getProjector());
     }
 
     public function getProjector(): Projector

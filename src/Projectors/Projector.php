@@ -19,4 +19,6 @@ interface Projector extends EventHandler
     public function getLastProcessedEventId(): int;
 
     public function lastEventProcessedAt(): Carbon;
+
+    public function handlesEventClassNames(): array;
 }

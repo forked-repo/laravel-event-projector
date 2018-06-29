@@ -82,7 +82,7 @@ trait ProjectsEvents
 
     public function hasReceivedAllEvents(): bool
     {
-        return ProjectorStatus::hasReceivedAllEvents($this);
+        return $this->getStatus()->hasReceivedAllEvents();
     }
 
     public function getLastProcessedEventId(): int
